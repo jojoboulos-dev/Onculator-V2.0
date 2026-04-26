@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Joseph's Chemo Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+      background: #ffffff;
+      color: #222;
+      padding: 10px 12px;
+      line-height: 1.5;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .title-block {
+      text-align: center;
+      margin-bottom: 10px;
+      padding: 6px 0 4px;
+    }
+    .title-block .line1 {
+      font-family: 'Georgia', serif;
+      font-size: 1.15rem;
+      color: #e63946;
+      font-weight: bold;
+    }
+    .title-block .line2 {
+      font-family: 'Impact', fantasy;
+      font-size: 1.15rem;
+      color: #2a9d8f;
+    }
+    .title-block .line3 {
+      font-family: 'Courier New', monospace;
+      font-size: 1.05rem;
+      color: #e76f51;
+    }
+    .title-block .line4 {
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 1.05rem;
+      color: #8338ec;
+      font-style: italic;
+    }
+    .title-block .line5 {
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 1.2rem;
+      color: #fb5607;
+      font-weight: bold;
+    }
+    .title-meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .title-meta .doctor {
+      font-size: 11px;
+      color: #2a9d8f;
+      font-weight: bold;
+    }
+    .title-meta .warn {
+      background: #fff3cd;
+      border: 1.5px solid #f59e0b;
+      border-radius: 14px;
+      padding: 2px 10px;
+      font-size: 10px;
+      color: #92400e;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 2.5px solid #8338ec;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #8338ec;
+      margin-bottom: 10px;
+      border-bottom: 1.5px dashed #8338ec;
+      padding-bottom: 5px;
+    }
+
+    .param-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .param-box label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      color: #e63946;
+      margin-bottom: 4px;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: 2px solid #fb5607;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .input-wrap:focus-within { border-color: #8338ec; }
+    .input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 16px;
+      font-weight: bold;
+      color: #222;
+      padding: 7px 10px;
+      width: 100%;
+    }
+    .input-wrap span {
+      padding: 0 8px;
+      color: #888;
+      font-size: 12px;
+      background: #f9f9f9;
+      border-left: 2px solid #fb5607;
+      white-space: nowrap;
+    }
+
+    .bsa-display {
+      background: #f0fdf4;
+      border: 2px solid #2a9d8f;
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .bsa-display.show { display: flex; align-items: center; gap: 12px; }
+    .bsa-display .bsa-label { font-size: 11px; color: #2a9d8f; font-weight: bold; }
+    .bsa-display .bsa-value { font-size: 20px; font-weight: bold; color: #e63946; }
+    .bsa-display .bsa-formula { font-size: 10px; color: #666; font-family: monospace; }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #2a9d8f;
+      margin-bottom: 6px;
+      margin-top: 2px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .btn-group button {
+      font-family: 'Comic Sans MS', cursive;
+      background: #ffffff;
+      border: 2px solid #8338ec;
+      border-radius: 8px;
+      color: #8338ec;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.3;
+    }
+    .btn-group button:hover { background: #f3eeff; }
+    .btn-group button.active {
+      background: #8338ec;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .hidden { display: none !important; }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn-calc {
+      flex: 1;
+      font-family: 'Comic Sans MS', cursive;
+      background: #e63946;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 11px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-calc:hover { opacity: 0.85; }
+    .btn-reset {
+      font-family: 'Comic Sans MS', cursive;
+      background: #ffffff;
+      border: 2px solid #fb5607;
+      border-radius: 10px;
+      color: #fb5607;
+      font-size: 13px;
+      padding: 11px 14px;
+      cursor: pointer;
+    }
+    .btn-reset:hover { background: #fff3ee; }
+
+    .error-box {
+      background: #fff0f0;
+      border: 2px solid #e63946;
+      border-radius: 8px;
+      color: #e63946;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 12px;
+      display: none;
+    }
+    .error-box.show { display: block; }
+
+    .result-card {
+      background: #ffffff;
+      border: 2.5px solid #2a9d8f;
+      border-radius: 14px;
+      padding: 14px 12px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .result-card.show { display: block; }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .result-header .title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #2a9d8f;
+    }
+    .result-header .validated {
+      background: #f0fdf4;
+      border: 1.5px solid #2a9d8f;
+      border-radius: 10px;
+      color: #2a9d8f;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .steps-box {
+      background: #fffbea;
+      border-left: 4px solid #f59e0b;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #555;
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    thead tr { background: #f3eeff; }
+    thead th {
+      padding: 8px 10px;
+      text-align: left;
+      color: #8338ec;
+      font-size: 11px;
+      font-weight: bold;
+      border-bottom: 2px solid #8338ec;
+    }
+    tbody tr { border-bottom: 1px solid #eee; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 9px 10px; color: #333; line-height: 1.4; }
+    tbody td:first-child { color: #e63946; font-weight: bold; }
+    tbody td:nth-child(2) { font-family: monospace; font-size: 11px; color: #666; }
+    tbody td:last-child { color: #2a9d8f; font-weight: bold; font-size: 13px; white-space: nowrap; }
+
+    .footer {
+      text-align: center;
+      color: #aaa;
+      font-size: 10px;
+      padding: 12px 0 20px;
+      border-top: 1px dashed #ddd;
+    }
+  </style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="title-block">
+  <div class="line1">Joseph's amazing</div>
+  <div class="line2">totally accurate</div>
+  <div class="line3">incredibly reliable</div>
+  <div class="line4">completely automated</div>
+  <div class="line5">Chemotherapy Calculator!</div>
+  <div class="title-meta">
+    <span class="doctor">Dr. Joseph Boulos</span>
+    <span class="warn">⚠️ Verify all doses clinically</span>
+  </div>
+</div>
+
+<!-- INPUT CARD -->
+<div class="card">
+  <div class="card-title">💊 Patient Parameters</div>
+
+  <div class="param-grid">
+    <div class="param-box">
+      <label>Weight</label>
+      <div class="input-wrap">
+        <input type="number" id="weight" placeholder="39" min="0.1" step="0.1" oninput="updateBSA()" />
+        <span>kg</span>
+      </div>
+    </div>
+    <div class="param-box">
+      <label>Height</label>
+      <div class="input-wrap">
+        <input type="number" id="height" placeholder="120" min="1" step="1" oninput="updateBSA()" />
+        <span>cm</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bsa-display" id="bsaDisplay">
+    <div>
+      <div class="bsa-label">BSA</div>
+      <div class="bsa-value" id="bsaLive">—</div>
+    </div>
+    <div class="bsa-formula" id="bsaFormulaLive"></div>
+  </div>
+
+  <div class="section-label">Protocol</div>
+  <div class="btn-group" id="protocolGroup">
+    <button onclick="selectProtocol('ALL')">ALL</button>
+    <button onclick="selectProtocol('osteosarcoma')">Osteosarcoma</button>
+    <button onclick="selectProtocol('burkitt_lymphoma')">Burkitt Lymphoma</button>
+  </div>
+
+  <!-- ALL Risk -->
+  <div id="allRiskSection" class="hidden">
+    <div class="section-label">Risk Classification</div>
+    <div class="btn-group" id="allRiskGroup">
+      <button onclick="selectRisk('low_risk')">🟢 Low Risk</button>
+      <button onclick="selectRisk('standard_risk')">🟡 Standard Risk</button>
+      <button onclick="selectRisk('high_risk')">🔴 High Risk</button>
+    </div>
+  </div>
+
+  <!-- Burkitt Options -->
+  <div id="burkittSection" class="hidden">
+    <div class="section-label">Risk Group</div>
+    <div class="btn-group" id="burkittGroupBtns">
+      <button onclick="selectBurkittGroup('group_b')">Group B</button>
+      <button onclick="selectBurkittGroup('group_c')">Group C</button>
+    </div>
+
+    <div class="section-label">Treatment Cycle</div>
+    <div class="btn-group" id="burkittCycleGroup">
+      <button onclick="selectCycle('COPADM3_cycle_1')">COPADM3 C1</button>
+      <button onclick="selectCycle('COPADM3_cycle_2')">COPADM3 C2</button>
+      <button onclick="selectCycle('COPADM8_cycle_1')">COPADM8 C1</button>
+      <button onclick="selectCycle('COPADM8_cycle_2')">COPADM8 C2</button>
+      <button onclick="selectCycle('CYM')">CYM</button>
+      <button onclick="selectCycle('CYVE')">CYVE</button>
+      <button onclick="selectCycle('COP')">COP Only</button>
+    </div>
+
+    <div class="section-label">Rituximab (High-risk only)</div>
+    <div class="btn-group" id="rituximabGroup">
+      <button onclick="selectRituximab(true)">Yes – High Risk</button>
+      <button onclick="selectRituximab(false)" class="active">No</button>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn-calc" onclick="calculate()">🧮 Calculate Doses</button>
+    <button class="btn-reset" onclick="resetAll()">↺ Reset</button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+</div>
+
+<!-- RESULT CARD -->
+<div class="result-card" id="resultCard">
+  <div class="result-header">
+    <span class="title">📋 Calculation Output</span>
+    <span class="validated">✔ Validated</span>
+  </div>
+  <div class="steps-box" id="stepsBox"></div>
+  <div id="tableWrap"></div>
+</div>
+
+<div class="footer">Dr. Joseph Boulos · Chemo Calc · Verify all doses with clinical pharmacist</div>
+
+<script>
+  let selectedProtocol   = null;
+  let selectedRisk       = null;
+  let selectedBurkittGroup = null;
+  let selectedCycle      = null;
+  let selectedRituximab  = false;
+
+  // ── BSA live update ──────────────────────────────────────
+  function updateBSA() {
+    const w = parseFloat(document.getElementById("weight").value);
+    const h = parseFloat(document.getElementById("height").value);
+    const disp = document.getElementById("bsaDisplay");
+    if (w > 0 && h > 0) {
+      const bsa = Math.round(Math.sqrt((h * w) / 3600) * 100) / 100;
+      document.getElementById("bsaLive").textContent = bsa + " m²";
+      document.getElementById("bsaFormulaLive").textContent =
+        `√((${h} × ${w}) / 3600) = ${bsa}`;
+      disp.classList.add("show");
+    } else {
+      disp.classList.remove("show");
+    }
+  }
+
+  // ── Selection helpers ────────────────────────────────────
+  function selectProtocol(p) {
+    selectedProtocol = p;
+    selectedRisk = null;
+    selectedBurkittGroup = null;
+    selectedCycle = null;
+    toggleActive("protocolGroup", p === "ALL" ? 0 : p === "osteosarcoma" ? 1 : 2);
+    document.getElementById("allRiskSection").classList.toggle("hidden", p !== "ALL");
+    document.getElementById("burkittSection").classList.toggle("hidden", p !== "burkitt_lymphoma");
+    clearActive("allRiskGroup");
+    clearActive("burkittGroupBtns");
+    clearActive("burkittCycleGroup");
+  }
+
+  function selectRisk(r) {
+    selectedRisk = r;
+    toggleActive("allRiskGroup", r === "low_risk" ? 0 : r === "standard_risk" ? 1 : 2);
+  }
+
+  function selectBurkittGroup(g) {
+    selectedBurkittGroup = g;
+    toggleActive("burkittGroupBtns", g === "group_b" ? 0 : 1);
+  }
+
+  function selectCycle(c) {
+    selectedCycle = c;
+    const btns = document.getElementById("burkittCycleGroup").querySelectorAll("button");
+    btns.forEach(b => b.classList.remove("active"));
+    const map = {
+      COPADM3_cycle_1: 0,
+      COPADM3_cycle_2: 1,
+      COPADM8_cycle_1: 2,
+      COPADM8_cycle_2: 3,
+      CYM:  4,
+      CYVE: 5,
+      COP:  6
+    };
+    if (map[c] !== undefined) btns[map[c]].classList.add("active");
+  }
+
+  function selectRituximab(val) {
+    selectedRituximab = val;
+    toggleActive("rituximabGroup", val ? 0 : 1);
+  }
+
+  function toggleActive(groupId, index) {
+    const btns = document.getElementById(groupId).querySelectorAll("button");
+    btns.forEach((b, i) => b.classList.toggle("active", i === index));
+  }
+
+  function clearActive(groupId) {
+    const el = document.getElementById(groupId);
+    if (el) el.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+  }
+
+  // ── Math helpers ─────────────────────────────────────────
+  function r(n) { return Math.round(n * 100) / 100; }
+
+  // BSA capped at 2
+  function calcBSA(height, weight) {
+    const raw = Math.sqrt((height * weight) / 3600);
+    return r(Math.min(raw, 2));
+  }
+
+  function makeRow(name, calcStr, value, unit) {
+    return { name, calcStr, value: r(value), unit };
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return "<p style='color:#aaa'>No results.</p>";
+    let html = `<table>
+      <thead><tr>
+        <th>Item</th><th>Calculation</th><th>Result</th>
+      </tr></thead><tbody>`;
+    rows.forEach(row => {
+      html += `<tr>
+        <td>${row.name}</td>
+        <td>${row.calcStr}</td>
+        <td>${row.value} ${row.unit}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    return html;
+  }
+
+  function showError(msg) {
+    const eb = document.getElementById("errorBox");
+    eb.textContent = "⚠ " + msg;
+    eb.classList.add("show");
+    document.getElementById("resultCard").classList.remove("show");
+  }
+
+  function clearError() {
+    const eb = document.getElementById("errorBox");
+    eb.textContent = "";
+    eb.classList.remove("show");
+  }
+
+  // ── Rituximab row (375 × BSA, BSA capped at 2) ───────────
+  function rituximabRow(bsa) {
+    const dose = r(375 * bsa);
+    return makeRow("Rituximab", `375 × ${bsa}`, dose, "mg");
+  }
+
+  // ── Protocol calculators ─────────────────────────────────
+
+  function calcALL(bsa, weight, risk) {
+    const pre      = r(1500 * bsa);
+    const bicPre   = r(0.04 * pre);
+    const ketrel   = r(0.04 * weight);
+    let mtx1, mtx23, mtx1Expr, mtx23Expr;
+    if (risk === "low_risk") {
+      mtx1 = r(250 * bsa);  mtx1Expr  = `250 × ${bsa}`;
+      mtx23 = r(2250 * bsa); mtx23Expr = `2250 × ${bsa}`;
+    } else {
+      mtx1 = r(500 * bsa);  mtx1Expr  = `500 × ${bsa}`;
+      mtx23 = r(4500 * bsa); mtx23Expr = `4500 × ${bsa}`;
+    }
+    const post       = r(3000 * bsa);
+    const bicPost    = r(0.04 * post);
+    const purnithol  = r(50 * bsa);
+    const leucovorin = r(15 * bsa);
+    return [
+      makeRow("Prehydration",        `1500 × ${bsa}`,   pre,        "cc"),
+      makeRow("Bicarbonate (pre)",   `0.04 × ${pre}`,    bicPre,     "cc"),
+      makeRow("Ketrel",              `0.04 × ${weight}`, ketrel,     "mg"),
+      makeRow("Methotrexate 1st hr", mtx1Expr,           mtx1,       "mg"),
+      makeRow("Methotrexate 23 hrs", mtx23Expr,          mtx23,      "mg"),
+      makeRow("Posthydration",       `3000 × ${bsa}`,    post,       "cc"),
+      makeRow("Bicarbonate (post)",  `0.04 × ${post}`,   bicPost,    "cc"),
+      makeRow("Purnithol",           `50 × ${bsa}`,      purnithol,  "mg"),
+      makeRow("Calcium Leucovorin",  `15 × ${bsa}`,      leucovorin, "mg"),
+    ];
+  }
+
+  function calcOsteosarcoma(bsa, weight) {
+    const pre    = r(1500 * bsa);
+    const bicPre = r(0.04 * pre);
+    const ketrel = r(0.04 * weight);
+    let dose     = r(12000 * bsa);
+    let doseCalc = `12000 × ${bsa}`;
+    if (dose > 20000) { dose = 20000; doseCalc += " → capped at 20,000"; }
+    const post       = r(3000 * bsa);
+    const bicPost    = r(0.04 * post);
+    const leucovorin = r(15 * bsa);
+    return [
+      makeRow("Prehydration",       `1500 × ${bsa}`,   pre,        "cc"),
+      makeRow("Bicarbonate (pre)",  `0.04 × ${pre}`,    bicPre,     "cc"),
+      makeRow("Ketrel",             `0.04 × ${weight}`, ketrel,     "mg"),
+      makeRow("Methotrexate",       doseCalc,           dose,       "mg"),
+      makeRow("Posthydration",      `3000 × ${bsa}`,    post,       "cc"),
+      makeRow("Bicarbonate (post)", `0.04 × ${post}`,   bicPost,    "cc"),
+      makeRow("Calcium Leucovorin", `15 × ${bsa}`,      leucovorin, "mg"),
+    ];
+  }
+
+  function calcCOP(bsa, weight) {
+    const ketrel = r(0.04 * weight);
+    let vin = r(1 * bsa);
+    let vinCalc = `1 × ${bsa}`;
+    if (vin > 2) { vin = 2; vinCalc += " → capped at 2"; }
+    const cyclo      = r(300 * bsa);
+    const mesna      = r(cyclo / 3);
+    const hydration  = r(3000 * bsa);
+    const solumedrol = r(16 * bsa);
+    return [
+      makeRow("Ketrel",           `0.04 × ${weight}`, ketrel,     "mg"),
+      makeRow("Vincristine",      vinCalc,            vin,        "mg"),
+      makeRow("Cyclophosphamide", `300 × ${bsa}`,     cyclo,      "mg"),
+      makeRow("Mesna",            `${cyclo} / 3`,     mesna,      "mg"),
+      makeRow("Hydration",        `3000 × ${bsa}`,    hydration,  "cc"),
+      makeRow("Solumedrol",       `16 × ${bsa}`,      solumedrol, "mg"),
+    ];
+  }
+
+  function calcCYM(bsa, weight) {
+    const pre     = r(1500 * bsa);
+    const bicPre  = r(0.04 * pre);
+    const ketrel  = r(0.04 * weight);
+    const mtx     = r(3000 * bsa);
+    const post    = r(3000 * bsa);
+    const bicPost = r(0.04 * post);
+    const ketrel2 = r(0.04 * weight);
+    const araC    = r(100 * bsa);
+    const leuc    = r(15 * bsa);
+    return [
+      makeRow("Prehydration",       `1500 × ${bsa}`,   pre,     "cc"),
+      makeRow("Bicarbonate (pre)",  `0.04 × ${pre}`,    bicPre,  "cc"),
+      makeRow("Ketrel",             `0.04 × ${weight}`, ketrel,  "mg"),
+      makeRow("Methotrexate",       `3000 × ${bsa}`,    mtx,     "mg"),
+      makeRow("Posthydration",      `3000 × ${bsa}`,    post,    "cc"),
+      makeRow("Bicarbonate (post)", `0.04 × ${post}`,   bicPost, "cc"),
+      makeRow("Ketrel (2nd)",       `0.04 × ${weight}`, ketrel2, "mg"),
+      makeRow("Ara-C",              `100 × ${bsa}`,     araC,    "mg"),
+      makeRow("Calcium Leucovorin", `15 × ${bsa}`,      leuc,    "mg"),
+    ];
+  }
+
+  function calcCYVE(bsa, weight) {
+    const ketrel  = r(0.04 * weight);
+    const araC1   = r(50 * bsa);
+    const ketrel2 = r(0.04 * weight);
+    const araC2   = r(2000 * bsa);
+    const etop    = r(100 * bsa);
+    return [
+      makeRow("Ketrel",       `0.04 × ${weight}`, ketrel,  "mg"),
+      makeRow("Ara-C (low)",  `50 × ${bsa}`,      araC1,   "mg"),
+      makeRow("Ketrel (2nd)", `0.04 × ${weight}`, ketrel2, "mg"),
+      makeRow("Ara-C (high)", `2000 × ${bsa}`,    araC2,   "mg"),
+      makeRow("Etoposide",    `100 × ${bsa}`,     etop,    "mg"),
+    ];
+  }
+
+  // COPADM cycle 1 — shared by both COPADM3 and COPADM8
+  // mtxDose: 3000 for COPADM3, 8000 for COPADM8
+  function calcCOPADM_C1(bsa, weight, mtxDose) {
+    const pre     = r(1500 * bsa);
+    const bicPre  = r(0.04 * pre);
+    const ketrel  = r(0.04 * weight);
+    let vin = r(2 * bsa);
+    let vinCalc = `2 × ${bsa}`;
+    if (vin > 2) { vin = 2; vinCalc += " → capped at 2"; }
+    const mtx     = r(mtxDose * bsa);
+    const solu    = r(16 * bsa);
+    const post    = r(3000 * bsa);
+    const bicPost = r(0.04 * post);
+    const cyclo   = r(250 * bsa);
+    const mesna   = r(cyclo / 3);
+    const doxo    = r(60 * bsa);
+    const leuc    = r(15 * bsa);
+    return [
+      makeRow("Prehydration",       `1500 × ${bsa}`,      pre,     "cc"),
+      makeRow("Bicarbonate (pre)",  `0.04 × ${pre}`,       bicPre,  "cc"),
+      makeRow("Ketrel",             `0.04 × ${weight}`,    ketrel,  "mg"),
+      makeRow("Vincristine",        vinCalc,               vin,     "mg"),
+      makeRow("Methotrexate",       `${mtxDose} × ${bsa}`, mtx,     "mg"),
+      makeRow("Solumedrol",         `16 × ${bsa}`,         solu,    "mg"),
+      makeRow("Posthydration",      `3000 × ${bsa}`,       post,    "cc"),
+      makeRow("Bicarbonate (post)", `0.04 × ${post}`,      bicPost, "cc"),
+      makeRow("Cyclophosphamide",   `250 × ${bsa}`,        cyclo,   "mg"),
+      makeRow("Mesna",              `${cyclo} / 3`,        mesna,   "mg"),
+      makeRow("Doxorubicin",        `60 × ${bsa}`,         doxo,    "mg"),
+      makeRow("Calcium Leucovorin", `15 × ${bsa}`,         leuc,    "mg"),
+    ];
+  }
+
+  // COPADM cycle 2 — all cycle 1 parameters with cyclophosphamide 500 instead of 250
+  function calcCOPADM_C2(bsa, weight, mtxDose) {
+    const pre     = r(1500 * bsa);
+    const bicPre  = r(0.04 * pre);
+    const ketrel  = r(0.04 * weight);
+    let vin = r(2 * bsa);
+    let vinCalc = `2 × ${bsa}`;
+    if (vin > 2) { vin = 2; vinCalc += " → capped at 2"; }
+    const mtx     = r(mtxDose * bsa);
+    const solu    = r(16 * bsa);
+    const post    = r(3000 * bsa);
+    const bicPost = r(0.04 * post);
+    const cyclo   = r(500 * bsa);   // amended: 500 instead of 250
+    const mesna   = r(cyclo / 3);
+    const doxo    = r(60 * bsa);
+    const leuc    = r(15 * bsa);
+    return [
+      makeRow("Prehydration",                `1500 × ${bsa}`,      pre,     "cc"),
+      makeRow("Bicarbonate (pre)",           `0.04 × ${pre}`,       bicPre,  "cc"),
+      makeRow("Ketrel",                      `0.04 × ${weight}`,    ketrel,  "mg"),
+      makeRow("Vincristine",                 vinCalc,               vin,     "mg"),
+      makeRow("Methotrexate",                `${mtxDose} × ${bsa}`, mtx,     "mg"),
+      makeRow("Solumedrol",                  `16 × ${bsa}`,         solu,    "mg"),
+      makeRow("Posthydration",               `3000 × ${bsa}`,       post,    "cc"),
+      makeRow("Bicarbonate (post)",          `0.04 × ${post}`,      bicPost, "cc"),
+      makeRow("Cyclophosphamide (amended)",  `500 × ${bsa}`,        cyclo,   "mg"),
+      makeRow("Mesna",                       `${cyclo} / 3`,        mesna,   "mg"),
+      makeRow("Doxorubicin",                 `60 × ${bsa}`,         doxo,    "mg"),
+      makeRow("Calcium Leucovorin",          `15 × ${bsa}`,         leuc,    "mg"),
+    ];
+  }
+
+  // ── Main calculate ───────────────────────────────────────
+  function calculate() {
+    clearError();
+    const weight = parseFloat(document.getElementById("weight").value);
+    const height = parseFloat(document.getElementById("height").value);
+
+    if (!weight || !height || weight <= 0 || height <= 0) {
+      showError("Please enter valid weight and height."); return;
+    }
+    if (!selectedProtocol) {
+      showError("Please select a protocol."); return;
+    }
+
+    const rawBSA = r(Math.sqrt((height * weight) / 3600));
+    const bsa    = Math.min(rawBSA, 2);   // capped at 2
+
+    const capNote = rawBSA > 2 ? `\nNote: Raw BSA ${rawBSA} m² → capped at 2.00 m²` : "";
+
+    const steps =
+      `Formula     : BSA = √((height × weight) / 3600)\n` +
+      `Substitution: BSA = √((${height} × ${weight}) / 3600)\n` +
+      `Intermediate: (${height} × ${weight}) / 3600 = ${r((height * weight) / 3600)}\n` +
+      `Raw BSA     : ${rawBSA} m²` + capNote + `\n` +
+      `Used BSA    : ${bsa} m²`;
+
+    let rows = [];
+
+    if (selectedProtocol === "ALL") {
+      if (!selectedRisk) { showError("Please select a risk level for ALL."); return; }
+      rows = calcALL(bsa, weight, selectedRisk);
+
+    } else if (selectedProtocol === "osteosarcoma") {
+      rows = calcOsteosarcoma(bsa, weight);
+
+    } else if (selectedProtocol === "burkitt_lymphoma") {
+      if (!selectedCycle) { showError("Please select a treatment cycle for Burkitt Lymphoma."); return; }
+
+      if      (selectedCycle === "COP")            rows = calcCOP(bsa, weight);
+      else if (selectedCycle === "CYM")            rows = calcCYM(bsa, weight);
+      else if (selectedCycle === "CYVE")           rows = calcCYVE(bsa, weight);
+      else if (selectedCycle === "COPADM3_cycle_1") rows = calcCOPADM_C1(bsa, weight, 3000);
+      else if (selectedCycle === "COPADM3_cycle_2") rows = calcCOPADM_C2(bsa, weight, 3000);
+      else if (selectedCycle === "COPADM8_cycle_1") rows = calcCOPADM_C1(bsa, weight, 8000);
+      else if (selectedCycle === "COPADM8_cycle_2") rows = calcCOPADM_C2(bsa, weight, 8000);
+
+      // Rituximab: 375 × BSA (BSA already capped at 2)
+      if (selectedRituximab) {
+        rows.push(rituximabRow(bsa));
+      }
+    }
+
+    document.getElementById("stepsBox").textContent = steps;
+    document.getElementById("tableWrap").innerHTML  = renderTable(rows);
+    document.getElementById("resultCard").classList.add("show");
+    document.getElementById("resultCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  // ── Reset ────────────────────────────────────────────────
+  function resetAll() {
+    document.getElementById("weight").value = "";
+    document.getElementById("height").value = "";
+    selectedProtocol     = null;
+    selectedRisk         = null;
+    selectedBurkittGroup = null;
+    selectedCycle        = null;
+    selectedRituximab    = false;
+    document.getElementById("bsaDisplay").classList.remove("show");
+    document.getElementById("allRiskSection").classList.add("hidden");
+    document.getElementById("burkittSection").classList.add("hidden");
+    document.getElementById("resultCard").classList.remove("show");
+    clearError();
+    ["protocolGroup","allRiskGroup","burkittGroupBtns","burkittCycleGroup","rituximabGroup"]
+      .forEach(clearActive);
+  }
+</script>
+</body>
+</html>
